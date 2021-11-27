@@ -1,0 +1,60 @@
+name: compile-deb
+on:
+  release:
+    types:
+      - created
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: save working directory in variable 'DIR'
+        run: echo "DIR=$(pwd)" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get update
+          sudo apt-get install dpkg-dev git -y
+
+      - name: Clone update repo and checkout latest release
+        run: |
+          cd $DIR
+          rm -rf update
+          git clone https://github.com/Crilum/update.git
+          cd update
+          
+      - name: Package
+        run: |
+          cd $DIR/update
+          chmod +x update
+          mkdir debbuild
+          mkdir -p usr/bin
+          mv update usr/bin/
+          echo "LATEST=`curl -s https://api.github.com/repos/Crilum/update/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | tr -d 'v'`" >> $GITHUB_ENV
+          mkdir -p DEBIAN
+          cd DEBIAN
+          echo "Maintainer: Crilum
+Summary: Updates apps/packages/dependencies from Apt, Pi-Apps, Flatpak, the Snap Store, Homebrew, and NPM
+Name: update
+Description: Simple script to update packages
+Version: ${{ env.LATEST }}
+License: gpl-3.0
+Architecture: all
+Provides: update
+Priority: optional
+Section: utils
+Package: update" > control
+          cd ..
+          cd ..
+          dpkg-deb --build debbuild/ update_${{ env.LATEST }}_all.deb
+          echo "DEB=$(basename update*.deb)" >> $GITHUB_ENV 
+          
+      - name: Upload to release
+        uses: docker://gacts/upload-to-release:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: '${{ env.DIR }}/update/debbuild/${{ env.DEB }}'
+          type: 'application/x-debian-package'
