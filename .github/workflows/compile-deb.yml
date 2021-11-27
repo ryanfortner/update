@@ -38,7 +38,7 @@ jobs:
           Summary: Updates apps/packages/dependencies from Apt, Pi-Apps, Flatpak, the Snap Store, Homebrew, and NPM
           Name: update
           Description: Simple script to update packages
-          Version: ${{ env.LATEST }}
+          Version: $LATEST
           License: gpl-3.0
           Architecture: all
           Provides: update
