@@ -24,7 +24,6 @@ jobs:
           rm -rf update
           git clone https://github.com/Crilum/update.git
           cd update
-          
       - name: Package
         run: |
           cd $DIR/update
@@ -36,16 +35,16 @@ jobs:
           mkdir -p DEBIAN
           cd DEBIAN
           echo "Maintainer: Crilum
-Summary: Updates apps/packages/dependencies from Apt, Pi-Apps, Flatpak, the Snap Store, Homebrew, and NPM
-Name: update
-Description: Simple script to update packages
-Version: ${{ env.LATEST }}
-License: gpl-3.0
-Architecture: all
-Provides: update
-Priority: optional
-Section: utils
-Package: update" > control
+          Summary: Updates apps/packages/dependencies from Apt, Pi-Apps, Flatpak, the Snap Store, Homebrew, and NPM
+          Name: update
+          Description: Simple script to update packages
+          Version: ${{ env.LATEST }}
+          License: gpl-3.0
+          Architecture: all
+          Provides: update
+          Priority: optional
+          Section: utils
+          Package: update" > control
           cd ..
           cd ..
           dpkg-deb --build debbuild/ update_${{ env.LATEST }}_all.deb
